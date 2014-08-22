@@ -56,6 +56,14 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
+    public void shouldNotMutateOrderInHeadOptionForTreeSet() throws Exception {
+        final Mutant mutant = getFirstMutant(TreeSetMutatorTestClasses.HasHeadOption.class);
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
+        TreeSetMutatorTestClasses.HasHeadOption unmutated = new TreeSetMutatorTestClasses.HasHeadOption(integers);
+        assertThat(unmutated.call(), equalTo(mutateAndCall(unmutated, mutant)));
+    }
+
+    @Test
     public void shouldNotMutateOrderInToSeqForTreeSet() throws Exception {
         final Mutant mutant = getFirstMutant(TreeSetMutatorTestClasses.HasToSeq.class);
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
