@@ -36,4 +36,12 @@ public class SetMutatorTest extends MutatorTestBase {
         HashSetMutatorTestClasses.HasToSeq unmutated = new HashSetMutatorTestClasses.HasToSeq(integers);
         assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
     }
+
+    @Test
+    public void shouldNotMutateOrderInTreeSetToSeq() throws Exception {
+        final Mutant mutant = getFirstMutant(TreeSetMutatorTestClasses.HasToSeq.class);
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
+        TreeSetMutatorTestClasses.HasToSeq unmutated = new TreeSetMutatorTestClasses.HasToSeq(integers);
+        assertThat(unmutated.call(), equalTo(mutateAndCall(unmutated, mutant)));
+    }
 }

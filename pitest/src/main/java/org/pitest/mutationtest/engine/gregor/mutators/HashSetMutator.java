@@ -7,6 +7,7 @@ import org.pitest.mutationtest.engine.gregor.MethodInfo;
 import org.pitest.mutationtest.engine.gregor.MethodMutatorFactory;
 import org.pitest.mutationtest.engine.gregor.MutationContext;
 import org.pitest.util.PitError;
+import org.objectweb.asm.Label;
 
 /**
  * TODO:
@@ -63,8 +64,21 @@ public enum HashSetMutator implements MethodMutatorFactory {
                     final MutationIdentifier newId = this.context.registerMutation(
                             this.factory, "swapped toSeq in " + owner + "::" + name);
                     if (this.context.shouldMutate(newId)) {
+                        // do not mutate SortedSet
+                        mv.visitInsn(Opcodes.DUP);
+                        mv.visitTypeInsn(Opcodes.INSTANCEOF, "scala/collection/immutable/SortedSet");
+                        Label l0 = new Label();
+                        mv.visitJumpInsn(Opcodes.IFEQ, l0);
+                        super.visitMethodInsn(opc, owner, name, desc, b);
+                        Label l1 = new Label();
+                        mv.visitJumpInsn(Opcodes.GOTO, l1);
+                        mv.visitLabel(l0);
+
                         super.visitMethodInsn(opc, owner, name, desc, b);
                         super.visitMethodInsn(opc, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", b);
+
+                        mv.visitLabel(l1);
+
                     } else {
                         super.visitMethodInsn(opc, owner, name, desc, b);
                     }
