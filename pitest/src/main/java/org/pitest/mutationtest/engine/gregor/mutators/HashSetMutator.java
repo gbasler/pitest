@@ -49,13 +49,25 @@ public enum HashSetMutator implements MethodMutatorFactory {
         @Override
         public void visitMethodInsn(int opc, String owner, String name, String desc, boolean b) {
 
-            if (name.equals("headOption") && owner.equals("scala/collection/immutable/Set")) {
-
-                final MutationIdentifier newId = this.context.registerMutation(
-                        this.factory, "swapped order in " + owner + "::" + name);
-                if (this.context.shouldMutate(newId)) {
-                    String updatedName = name.replace("headOption", "lastOption");
-                    super.visitMethodInsn(opc, owner, updatedName, desc, b);
+            if (owner.equals("scala/collection/immutable/Set")) {
+                if (name.equals("headOption")) {
+                    final MutationIdentifier newId = this.context.registerMutation(
+                            this.factory, "swapped headOption in " + owner + "::" + name);
+                    if (this.context.shouldMutate(newId)) {
+                        String updatedName = name.replace("headOption", "lastOption");
+                        super.visitMethodInsn(opc, owner, updatedName, desc, b);
+                    } else {
+                        super.visitMethodInsn(opc, owner, name, desc, b);
+                    }
+                } else if (name.equals("toSeq")) {
+                    final MutationIdentifier newId = this.context.registerMutation(
+                            this.factory, "swapped toSeq in " + owner + "::" + name);
+                    if (this.context.shouldMutate(newId)) {
+                        super.visitMethodInsn(opc, owner, name, desc, b);
+                        super.visitMethodInsn(opc, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", b);
+                    } else {
+                        super.visitMethodInsn(opc, owner, name, desc, b);
+                    }
                 } else {
                     super.visitMethodInsn(opc, owner, name, desc, b);
                 }

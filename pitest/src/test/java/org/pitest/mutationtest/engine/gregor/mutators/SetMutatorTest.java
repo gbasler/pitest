@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+
 public class SetMutatorTest extends MutatorTestBase {
 
     @Before
@@ -18,9 +21,19 @@ public class SetMutatorTest extends MutatorTestBase {
 
     @Test
     public void shouldReplaceHeadOptionWithLastOption() throws Exception {
-        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasHeadOption.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2, 3, 4, 5));
-        SetMutatorTestClasses.HasHeadOption unmutated = new SetMutatorTestClasses.HasHeadOption(integers);
-        assertMutantCallableReturns(unmutated, mutant, "4"); // not 5 since unordered!
+        final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasHeadOption.class);
+        // will fail with only one element since head == tail
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
+        HashSetMutatorTestClasses.HasHeadOption unmutated = new HashSetMutatorTestClasses.HasHeadOption(integers);
+        // since head != tail, the mutant should give a different result
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
+    public void shouldMutateOrderInToSeq() throws Exception {
+        final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasToSeq.class);
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
+        HashSetMutatorTestClasses.HasToSeq unmutated = new HashSetMutatorTestClasses.HasToSeq(integers);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
     }
 }
