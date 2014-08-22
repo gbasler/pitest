@@ -61,7 +61,7 @@
             </activation>
             <modules>
                 <module>pitest-java8-verification</module>
-                <module>pitest-groovy-verification</module>
+                <!--<module>pitest-groovy-verification</module>-->
             </modules>
         </profile>
         <profile>
@@ -71,7 +71,7 @@
                 <jdk>1.7</jdk>
             </activation>
             <modules>
-                <module>pitest-groovy-verification</module>
+                <!--<module>pitest-groovy-verification</module>-->
             </modules>
         </profile>   
         <profile>
@@ -193,7 +193,18 @@
         </pluginManagement>
     </build>
 
-
+  <distributionManagement>
+    <repository>
+      <id>releases</id>
+      <name>Internal Releases</name>
+      <url>http://nexus/nexus/content/repositories/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>Snapshots</id>
+      <name>Internal Snapshots</name>
+      <url>http://nexus/nexus/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
     <!-- versions of libraries which are used in different projects or which are used for few artifacts -->
     <properties>

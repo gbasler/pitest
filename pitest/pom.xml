@@ -12,7 +12,25 @@
 	<url>http://pitest.org</url>
 	<description>Mutation testing system for Java.</description>
 
+    <repositories>
+        <repository>
+            <id>scala-tools.org</id>
+            <name>Scala-tools Maven2 Repository</name>
+            <url>http://scala-tools.org/repo-releases</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>scala-tools.org</id>
+            <name>Scala-tools Maven2 Repository</name>
+            <url>http://scala-tools.org/repo-releases</url>
+        </pluginRepository>
+    </pluginRepositories>
+
 	<build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -169,9 +187,9 @@
 						</goals>
 						<configuration>
 							<target>
-								<!--Workaround copied from https://github.com/orfjackal/jumi for 
-									issue with maven-shade-plugin There appears to be some stale state from previous 
-									executions of the Shade plugin, which manifest themselves as "We have a duplicate" 
+								<!--Workaround copied from https://github.com/orfjackal/jumi for
+									issue with maven-shade-plugin There appears to be some stale state from previous
+									executions of the Shade plugin, which manifest themselves as "We have a duplicate"
 									warnings on build and also as some classes not being updated on build. -->
 								<delete file="${project.build.directory}/${project.build.finalName}.${project.packaging}" />
 							</target>
@@ -199,6 +217,40 @@
 					</execution>
 				</executions>
 			</plugin>
+
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <version>2.14.1</version>
+                <artifactId>maven-scala-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-test-compile</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jvmArgs>
+                        <jvmArg>-Xms200M</jvmArg>
+                        <jvmArg>-Xmx724M</jvmArg>
+                        <jvmArg>-Xss5M</jvmArg>
+                    </jvmArgs>
+                    <displayCmd>true</displayCmd>
+                    <args>
+                        <arg>-no-specialization</arg>
+                    </args>
+                </configuration>
+            </plugin>
 		</plugins>
 
 		<resources>
@@ -210,6 +262,17 @@
 	</build>
 
 	<dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.10.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-compiler</artifactId>
+            <version>2.10.4</version>
+            <optional>true</optional>
+        </dependency>
 		<dependency>
 			<groupId>org.ow2.asm</groupId>
 			<artifactId>asm</artifactId>
