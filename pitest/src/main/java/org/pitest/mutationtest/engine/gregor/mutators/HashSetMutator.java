@@ -50,7 +50,9 @@ public enum HashSetMutator implements MethodMutatorFactory {
         @Override
         public void visitMethodInsn(int opc, String owner, String name, String desc, boolean b) {
 
-            if (owner.equals("scala/collection/immutable/Set")) {
+            boolean isSet = owner.equals("scala/collection/immutable/Set");
+            boolean isHashSet = owner.equals("scala/collection/immutable/HashSet");
+            if (isSet || isHashSet) {
                 if (name.equals("headOption")) {
                     final MutationIdentifier newId = this.context.registerMutation(
                             this.factory, "swapped headOption in " + owner + "::" + name);
@@ -75,7 +77,9 @@ public enum HashSetMutator implements MethodMutatorFactory {
                         mv.visitLabel(l0);
 
                         super.visitMethodInsn(opc, owner, name, desc, b);
-                        super.visitMethodInsn(opc, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", b);
+                        super.visitMethodInsn(Opcodes.INVOKEINTERFACE,
+                                "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
+                        mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/Seq");
 
                         mv.visitLabel(l1);
 

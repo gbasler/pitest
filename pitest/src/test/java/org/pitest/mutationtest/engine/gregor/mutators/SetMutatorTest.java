@@ -20,7 +20,17 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
-    public void shouldReplaceHeadOptionWithLastOption() throws Exception {
+    public void shouldReplaceHeadOptionWithLastOptionForSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasHeadOption.class);
+        // will fail with only one element since head == tail
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
+        SetMutatorTestClasses.HasHeadOption unmutated = new SetMutatorTestClasses.HasHeadOption(integers);
+        // since head != tail, the mutant should give a different result
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
+    public void shouldReplaceHeadOptionWithLastOptionForHashSet() throws Exception {
         final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasHeadOption.class);
         // will fail with only one element since head == tail
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
@@ -30,7 +40,15 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
-    public void shouldMutateOrderInToSeq() throws Exception {
+    public void shouldMutateOrderInToSeqForSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToSeq.class);
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
+        SetMutatorTestClasses.HasToSeq unmutated = new SetMutatorTestClasses.HasToSeq(integers);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
+    public void shouldMutateOrderInToSeqForHashSet() throws Exception {
         final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasToSeq.class);
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
         HashSetMutatorTestClasses.HasToSeq unmutated = new HashSetMutatorTestClasses.HasToSeq(integers);
@@ -38,7 +56,7 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
-    public void shouldNotMutateOrderInTreeSetToSeq() throws Exception {
+    public void shouldNotMutateOrderInToSeqForTreeSet() throws Exception {
         final Mutant mutant = getFirstMutant(TreeSetMutatorTestClasses.HasToSeq.class);
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
         TreeSetMutatorTestClasses.HasToSeq unmutated = new TreeSetMutatorTestClasses.HasToSeq(integers);
