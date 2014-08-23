@@ -115,6 +115,23 @@ public enum HashSetMutator implements MethodMutatorFactory {
                         }
                     };
                     mutateWith(newId, mutator);
+                } else if (name.equals("toIndexedSeq")) {
+                    final MutationIdentifier newId = this.context.registerMutation(
+                            this.factory, "swapped toIndexedSeq in " + owner + "::" + name);
+
+                    Mutator mutator = new Mutator() {
+                        public void visitOriginal() {
+                            visitMethodInsnOriginal(opc, owner, name, desc, b);
+                        }
+
+                        public void visitReplacement() {
+                            visitOriginal();
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE,
+                                    "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
+                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/Seq");
+                        }
+                    };
+                    mutateWith(newId, mutator);
                 } else {
                     super.visitMethodInsn(opc, owner, name, desc, b);
                 }

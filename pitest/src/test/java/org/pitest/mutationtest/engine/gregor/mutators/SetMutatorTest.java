@@ -48,6 +48,14 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
+    public void shouldMutateOrderInToIndexedSeqForSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToIndexedSeq.class);
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
+        SetMutatorTestClasses.HasToIndexedSeq unmutated = new SetMutatorTestClasses.HasToIndexedSeq(integers);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
     public void shouldMutateOrderInToSeqForHashSet() throws Exception {
         final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasToSeq.class);
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));

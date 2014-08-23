@@ -43,6 +43,14 @@ object SetMutatorTestClasses {
     }
   }
 
+  class HasToIndexedSeq(values: java.util.List[Int]) extends Callable[String] {
+    val set: Set[Int] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.toIndexedSeq.mkString(", ")
+    }
+  }
+
 }
 
 object TreeSetMutatorTestClasses {
