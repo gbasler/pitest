@@ -56,6 +56,22 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
+    public void shouldMutateOrderInToArrayForSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToArray.class);
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
+        SetMutatorTestClasses.HasToArray unmutated = new SetMutatorTestClasses.HasToArray(integers);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
+    public void shouldMutateOrderInFoldLeftForHashSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasFoldLeft.class);
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
+        SetMutatorTestClasses.HasFoldLeft unmutated = new SetMutatorTestClasses.HasFoldLeft(integers);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
     public void shouldMutateOrderInToSeqForHashSet() throws Exception {
         final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasToSeq.class);
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));

@@ -128,7 +128,21 @@ public enum HashSetMutator implements MethodMutatorFactory {
                             visitOriginal();
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE,
                                     "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
-                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/Seq");
+                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/IndexedSeq");
+                        }
+                    };
+                    mutateWith(newId, mutator);
+                } else if (name.equals("toArray")) {
+                    final MutationIdentifier newId = this.context.registerMutation(
+                            this.factory, "swapped toArray in " + owner + "::" + name);
+
+                    Mutator mutator = new Mutator() {
+                        public void visitOriginal() {
+                            visitMethodInsnOriginal(opc, owner, name, desc, b);
+                        }
+
+                        public void visitReplacement() {
+                            // TODO
                         }
                     };
                     mutateWith(newId, mutator);

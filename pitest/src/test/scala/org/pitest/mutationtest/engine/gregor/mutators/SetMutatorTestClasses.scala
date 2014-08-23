@@ -51,6 +51,22 @@ object SetMutatorTestClasses {
     }
   }
 
+  class HasToArray(values: java.util.List[Int]) extends Callable[String] {
+    val set: Set[Int] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.toArray.mkString(", ")
+    }
+  }
+
+  class HasFoldLeft(values: java.util.List[Int]) extends Callable[String] {
+    val set: Set[Int] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.foldLeft("")((s, i) => s + i)
+    }
+  }
+
 }
 
 object TreeSetMutatorTestClasses {
