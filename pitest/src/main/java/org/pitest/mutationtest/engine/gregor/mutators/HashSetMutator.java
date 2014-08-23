@@ -35,6 +35,12 @@ public enum HashSetMutator implements MethodMutatorFactory {
         return toString();
     }
 
+    private static interface Mutator {
+        void visitOriginal();
+
+        void visitReplacement();
+    }
+
     private final class ReorderHashSetVisitor extends MethodVisitor {
         private final MethodMutatorFactory factory;
         private final MutationContext context;
@@ -47,45 +53,68 @@ public enum HashSetMutator implements MethodMutatorFactory {
             this.context = context;
         }
 
-        @Override
-        public void visitMethodInsn(int opc, String owner, String name, String desc, boolean b) {
+        public void mutateWith(final MutationIdentifier newId, Mutator mutator) {
+            if (this.context.shouldMutate(newId)) {
+                // do not mutate SortedSet
+                mv.visitInsn(Opcodes.DUP);
+                mv.visitTypeInsn(Opcodes.INSTANCEOF, "scala/collection/immutable/SortedSet");
+                Label l0 = new Label();
+                mv.visitJumpInsn(Opcodes.IFEQ, l0);
+                mutator.visitOriginal();
+                Label l1 = new Label();
+                mv.visitJumpInsn(Opcodes.GOTO, l1);
+                mv.visitLabel(l0);
 
-            boolean isSet = owner.equals("scala/collection/immutable/Set");
+                mutator.visitReplacement();
+
+                mv.visitLabel(l1);
+            } else {
+                mutator.visitOriginal();
+            }
+        }
+
+        public void visitMethodInsnOriginal(final int opc, final String owner, final String name, final String desc, final boolean b) {
+            super.visitMethodInsn(opc, owner, name, desc, b);
+        }
+
+        @Override
+        public void visitMethodInsn(final int opc, final String owner, final String name, final String desc, final boolean b) {
+
+            final boolean isSet = owner.equals("scala/collection/immutable/Set");
             boolean isHashSet = owner.equals("scala/collection/immutable/HashSet");
             if (isSet || isHashSet) {
                 if (name.equals("headOption")) {
                     final MutationIdentifier newId = this.context.registerMutation(
                             this.factory, "swapped headOption in " + owner + "::" + name);
-                    if (this.context.shouldMutate(newId)) {
-                        String updatedName = name.replace("headOption", "lastOption");
-                        super.visitMethodInsn(opc, owner, updatedName, desc, b);
-                    } else {
-                        super.visitMethodInsn(opc, owner, name, desc, b);
-                    }
+
+                    Mutator mutator = new Mutator() {
+                        public void visitOriginal() {
+                            visitMethodInsnOriginal(opc, owner, name, desc, b);
+                        }
+
+                        public void visitReplacement() {
+                            mv.visitMethodInsn(opc, owner, "lastOption", desc, b);
+                        }
+                    };
+
+                    mutateWith(newId, mutator);
                 } else if (name.equals("toSeq")) {
                     final MutationIdentifier newId = this.context.registerMutation(
                             this.factory, "swapped toSeq in " + owner + "::" + name);
-                    if (this.context.shouldMutate(newId)) {
-                        // do not mutate SortedSet
-                        mv.visitInsn(Opcodes.DUP);
-                        mv.visitTypeInsn(Opcodes.INSTANCEOF, "scala/collection/immutable/SortedSet");
-                        Label l0 = new Label();
-                        mv.visitJumpInsn(Opcodes.IFEQ, l0);
-                        super.visitMethodInsn(opc, owner, name, desc, b);
-                        Label l1 = new Label();
-                        mv.visitJumpInsn(Opcodes.GOTO, l1);
-                        mv.visitLabel(l0);
 
-                        super.visitMethodInsn(opc, owner, name, desc, b);
-                        super.visitMethodInsn(Opcodes.INVOKEINTERFACE,
-                                "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
-                        mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/Seq");
+                    Mutator mutator = new Mutator() {
+                        public void visitOriginal() {
+                            visitMethodInsnOriginal(opc, owner, name, desc, b);
+                        }
 
-                        mv.visitLabel(l1);
-
-                    } else {
-                        super.visitMethodInsn(opc, owner, name, desc, b);
-                    }
+                        public void visitReplacement() {
+                            visitOriginal();
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE,
+                                    "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
+                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/Seq");
+                        }
+                    };
+                    mutateWith(newId, mutator);
                 } else {
                     super.visitMethodInsn(opc, owner, name, desc, b);
                 }
