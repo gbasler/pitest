@@ -50,8 +50,6 @@ public enum HashSetMutator implements MethodMutatorFactory {
         private final MethodMutatorFactory factory;
         private final MutationContext context;
 
-        private State state = State.SEEN_NOTHING;
-
         public ReorderHashSetVisitor(final MethodMutatorFactory factory,
                                      final MutationContext context,
                                      final MethodVisitor delegateVisitor) {
@@ -97,7 +95,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
             if (isSet || isHashSet) {
                 if (swappableOps.containsKey(name)) {
                     final MutationIdentifier newId = this.context.registerMutation(
-                            this.factory, "swapped " + name + " in " + owner + "::" + name);
+                            this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
 
                     Mutator mutator = new Mutator() {
                         public void visitOriginal() {
@@ -112,7 +110,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
                     mutateWith(newId, mutator);
                 } else if (name.equals("toSeq")) {
                     final MutationIdentifier newId = this.context.registerMutation(
-                            this.factory, "swapped toSeq in " + owner + "::" + name);
+                            this.factory, "ordering matters for toSeq in " + owner + "::" + name);
 
                     Mutator mutator = new Mutator() {
                         public void visitOriginal() {
@@ -129,7 +127,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
                     mutateWith(newId, mutator);
                 } else if (name.equals("toIndexedSeq")) {
                     final MutationIdentifier newId = this.context.registerMutation(
-                            this.factory, "swapped toIndexedSeq in " + owner + "::" + name);
+                            this.factory, "ordering matters for toIndexedSeq in " + owner + "::" + name);
 
                     Mutator mutator = new Mutator() {
                         public void visitOriginal() {
@@ -146,7 +144,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
                     mutateWith(newId, mutator);
                 } else if (name.equals("toArray")) {
                     final MutationIdentifier newId = this.context.registerMutation(
-                            this.factory, "swapped toArray in " + owner + "::" + name);
+                            this.factory, "ordering matters for toArray in " + owner + "::" + name);
 
                     Mutator mutator = new Mutator() {
                         public void visitOriginal() {
@@ -177,7 +175,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
 
                         // TODO: check collection.breakOut!!!
                         public void visitReplacement() {
-                            // trying to avoid to have to allocate more variables on the local frame
+                            // trying to avoid to have to allocate more variables in the local frame
                             // I think it's safer like this...
 
                             // v1, v2, v2 -> v2, v3, v1, v2, v3
@@ -194,6 +192,32 @@ public enum HashSetMutator implements MethodMutatorFactory {
                             mv.visitInsn(Opcodes.DUP_X2);
                             // v1*, v2, v3, v1* -> v1*, v2, v3
                             mv.visitInsn(Opcodes.POP);
+
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", name, desc, b);
+                        }
+                    };
+                    mutateWith(newId, mutator);
+                } else if (name.equals("reduceLeft") || name.equals("reduceRight")) {
+                    final MutationIdentifier newId = this.context.registerMutation(
+                            this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
+
+                    Mutator mutator = new Mutator() {
+                        public void visitOriginal() {
+                            visitMethodInsnOriginal(opc, owner, name, desc, b);
+                        }
+
+                        // TODO: check collection.breakOut!!!
+                        public void visitReplacement() {
+                            // trying to avoid to have to allocate more variables in the local frame
+                            // I think it's safer like this...
+
+                            mv.visitInsn(Opcodes.SWAP);
+
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, owner, "toSeq", "()Lscala/collection/Seq;", true);
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
+                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
+
+                            mv.visitInsn(Opcodes.SWAP);
 
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", name, desc, b);
                         }

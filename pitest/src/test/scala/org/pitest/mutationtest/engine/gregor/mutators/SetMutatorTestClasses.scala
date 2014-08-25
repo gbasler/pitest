@@ -67,6 +67,14 @@ object SetMutatorTestClasses {
     }
   }
 
+  class HasReduceLeft(values: java.util.List[String]) extends Callable[String] {
+    val set: Set[String] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.reduceLeft(_ + _)
+    }
+  }
+
 }
 
 object TreeSetMutatorTestClasses {

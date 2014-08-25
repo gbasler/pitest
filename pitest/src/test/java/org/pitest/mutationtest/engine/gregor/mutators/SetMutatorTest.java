@@ -72,6 +72,14 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
+    public void shouldMutateOrderInReduceLeftForHashSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasReduceLeft.class);
+        List<String> strings = new LinkedList<String>(Arrays.asList("one", "two"));
+        SetMutatorTestClasses.HasReduceLeft unmutated = new SetMutatorTestClasses.HasReduceLeft(strings);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
     public void shouldMutateOrderInToSeqForHashSet() throws Exception {
         final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasToSeq.class);
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
