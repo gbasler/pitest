@@ -51,7 +51,9 @@ public class CheckTestHasFailedResultListener implements TestListener {
   }
 
   public DetectionStatus status() {
-    if (this.lastFailingTest.hasSome()) {
+      // TODO: hack: our view of the world is the exact opposite...
+      // should be depending on the mutator...
+    if (!this.lastFailingTest.hasSome()) {
       return DetectionStatus.KILLED;
     } else {
       return DetectionStatus.SURVIVED;
