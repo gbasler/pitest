@@ -142,7 +142,14 @@ public enum HashSetMutator implements MethodMutatorFactory {
                         }
 
                         public void visitReplacement() {
-                            // TODO
+                            visitOriginal();
+                            mv.visitTypeInsn(Opcodes.CHECKCAST, "[I");
+
+                            mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/Predef$", "MODULE$", "Lscala/Predef$;");
+                            mv.visitInsn(Opcodes.SWAP);
+
+                            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/Predef$", "intArrayOps", "([I)Lscala/collection/mutable/ArrayOps;", false);
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/mutable/ArrayOps", "reverse", "()Ljava/lang/Object;", true);
                         }
                     };
                     mutateWith(newId, mutator);
