@@ -308,7 +308,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
                         }
                     };
                     mutateWith(newId, mutator);
-                } else if (name.equals("map")) {
+                } else if (name.equals("map") || name.equals("flatMap")) {
                     final MutationIdentifier newId = this.context.registerMutation(
                             this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
 
@@ -333,7 +333,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
                             mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/collection/Seq$", "MODULE$", "Lscala/collection/Seq$;");
                             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/collection/Seq$", "canBuildFrom", "()Lscala/collection/generic/CanBuildFrom;", false);
 
-                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableLike", "map", "(Lscala/Function1;Lscala/collection/generic/CanBuildFrom;)Ljava/lang/Object;", true);
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableLike", name, "(Lscala/Function1;Lscala/collection/generic/CanBuildFrom;)Ljava/lang/Object;", true);
                             mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", "toSet", "()Lscala/collection/immutable/Set;", true);
                         }
