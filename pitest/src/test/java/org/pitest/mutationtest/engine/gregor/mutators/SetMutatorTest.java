@@ -72,7 +72,15 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
-    public void shouldMutateOrderInFoldLeftForHashSet() throws Exception {
+    public void shouldMutateOrderInForeachForSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasForeach.class);
+        List<String> strings = new LinkedList<String>(Arrays.asList("1", "2"));
+        SetMutatorTestClasses.HasForeach unmutated = new SetMutatorTestClasses.HasForeach(strings);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
+    public void shouldMutateOrderInFoldLeftForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasFoldLeft.class);
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
         SetMutatorTestClasses.HasFoldLeft unmutated = new SetMutatorTestClasses.HasFoldLeft(integers);
@@ -80,7 +88,7 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
-    public void shouldMutateOrderInReduceLeftForHashSet() throws Exception {
+    public void shouldMutateOrderInReduceLeftForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasReduceLeft.class);
         List<String> strings = new LinkedList<String>(Arrays.asList("one", "two"));
         SetMutatorTestClasses.HasReduceLeft unmutated = new SetMutatorTestClasses.HasReduceLeft(strings);
@@ -88,7 +96,7 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
-    public void shouldMutateOrderInScanLeftForHashSet() throws Exception {
+    public void shouldMutateOrderInScanLeftForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasScanLeft.class);
         List<String> strings = new LinkedList<String>(Arrays.asList("one", "two"));
         SetMutatorTestClasses.HasScanLeft unmutated = new SetMutatorTestClasses.HasScanLeft(strings);

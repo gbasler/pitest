@@ -67,6 +67,16 @@ object SetMutatorTestClasses {
     }
   }
 
+  class HasForeach(values: java.util.List[String]) extends Callable[String] {
+    val set: Set[String] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      val sb = new StringBuilder()
+      set.foreach(sb.append)
+      sb.toString()
+    }
+  }
+
   class HasFoldLeft(values: java.util.List[Int]) extends Callable[String] {
     val set: Set[Int] = Set(values.asScala.toSeq: _*)
 

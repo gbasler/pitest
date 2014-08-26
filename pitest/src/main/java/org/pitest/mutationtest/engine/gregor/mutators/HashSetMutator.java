@@ -272,6 +272,30 @@ public enum HashSetMutator implements MethodMutatorFactory {
                         }
                     };
                     mutateWith(newId, mutator);
+                } else if (name.equals("foreach")) {
+                    final MutationIdentifier newId = this.context.registerMutation(
+                            this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
+
+                    Mutator mutator = new Mutator() {
+                        public void visitOriginal() {
+                            visitMethodInsnOriginal(opc, owner, name, desc, b);
+                        }
+
+                        // TODO: check collection.breakOut!!!
+                        public void visitReplacement() {
+                            mv.visitInsn(Opcodes.SWAP);
+
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/immutable/Set", "toSeq", "()Lscala/collection/Seq;", true);
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
+                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/IterableLike");
+
+                            mv.visitInsn(Opcodes.SWAP);
+
+                            // TODO: what about specialized Function1?
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/IterableLike", "foreach", "(Lscala/Function1;)V", true);
+                        }
+                    };
+                    mutateWith(newId, mutator);
                 } else {
                     super.visitMethodInsn(opc, owner, name, desc, b);
                 }
