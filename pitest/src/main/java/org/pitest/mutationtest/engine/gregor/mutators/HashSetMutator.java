@@ -282,6 +282,8 @@ public enum HashSetMutator implements MethodMutatorFactory {
                             mv.visitInsn(Opcodes.POP);
 
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", name, desc, b);
+                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", "toSet", "()Lscala/collection/immutable/Set;", true);
                         }
                     };
                     mutateWith(newId, mutator);

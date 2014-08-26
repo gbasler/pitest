@@ -152,7 +152,7 @@ object SetMutatorTestClasses {
     val set: Set[String] = Set(values.asScala.toSeq: _*)
 
     def call: String = {
-      set.scanLeft("")((s, i) => s + i).last
+      set.scanLeft("")((s, i) => s + i).mkString(", ")
     }
   }
 
