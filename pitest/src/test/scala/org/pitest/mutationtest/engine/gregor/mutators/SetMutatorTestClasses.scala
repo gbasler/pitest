@@ -35,6 +35,14 @@ object SetMutatorTestClasses {
     }
   }
 
+  class HasToList(values: java.util.List[Int]) extends Callable[String] {
+    val set: Set[Int] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.toList.mkString(", ")
+    }
+  }
+
   class HasToSeq(values: java.util.List[Int]) extends Callable[String] {
     val set: Set[Int] = Set(values.asScala.toSeq: _*)
 
@@ -72,6 +80,14 @@ object SetMutatorTestClasses {
 
     def call: String = {
       set.reduceLeft(_ + _)
+    }
+  }
+
+  class HasScanLeft(values: java.util.List[String]) extends Callable[String] {
+    val set: Set[String] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.scanLeft("")((s, i) => s + i).last
     }
   }
 

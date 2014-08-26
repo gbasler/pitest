@@ -110,7 +110,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
                     mutateWith(newId, mutator);
                 } else if (name.equals("toSeq")) {
                     final MutationIdentifier newId = this.context.registerMutation(
-                            this.factory, "ordering matters for toSeq in " + owner + "::" + name);
+                            this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
 
                     Mutator mutator = new Mutator() {
                         public void visitOriginal() {
@@ -125,9 +125,25 @@ public enum HashSetMutator implements MethodMutatorFactory {
                         }
                     };
                     mutateWith(newId, mutator);
+                } else if (name.equals("toList")) {
+                    final MutationIdentifier newId = this.context.registerMutation(
+                            this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
+
+                    Mutator mutator = new Mutator() {
+                        public void visitOriginal() {
+                            visitMethodInsnOriginal(opc, owner, name, desc, b);
+                        }
+
+                        public void visitReplacement() {
+                            visitOriginal();
+                            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
+                                    "scala/collection/immutable/List", "reverse", "()Lscala/collection/immutable/List;", false);
+                        }
+                    };
+                    mutateWith(newId, mutator);
                 } else if (name.equals("toIndexedSeq")) {
                     final MutationIdentifier newId = this.context.registerMutation(
-                            this.factory, "ordering matters for toIndexedSeq in " + owner + "::" + name);
+                            this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
 
                     Mutator mutator = new Mutator() {
                         public void visitOriginal() {
@@ -166,7 +182,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
                     mutateWith(newId, mutator);
                 } else if (name.equals("foldLeft") || name.equals("foldRight")) {
                     final MutationIdentifier newId = this.context.registerMutation(
-                            this.factory, "swapped " + name + " in " + owner + "::" + name);
+                            this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
 
                     Mutator mutator = new Mutator() {
                         public void visitOriginal() {
@@ -218,6 +234,39 @@ public enum HashSetMutator implements MethodMutatorFactory {
                             mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
 
                             mv.visitInsn(Opcodes.SWAP);
+
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", name, desc, b);
+                        }
+                    };
+                    mutateWith(newId, mutator);
+                } else if (name.equals("scanLeft") || name.equals("scanRight")) {
+                    final MutationIdentifier newId = this.context.registerMutation(
+                            this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
+
+                    Mutator mutator = new Mutator() {
+                        public void visitOriginal() {
+                            visitMethodInsnOriginal(opc, owner, name, desc, b);
+                        }
+
+                        // TODO: check collection.breakOut!!!
+                        public void visitReplacement() {
+                            // trying to avoid to have to allocate more variables in the local frame
+                            // I think it's safer like this...
+
+                            // v1, v2, v2 -> v2, v3, v1, v2, v3
+                            mv.visitInsn(Opcodes.DUP2_X1);
+                            // v2, v3, v1, v2, v3 -> v2, v3, v1
+                            mv.visitInsn(Opcodes.POP2);
+
+                            // v2, v3, v1*
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, owner, "toSeq", "()Lscala/collection/Seq;", true);
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
+                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
+
+                            // v2, v3, v1* -> v1*, v2, v3, v1*
+                            mv.visitInsn(Opcodes.DUP_X2);
+                            // v1*, v2, v3, v1* -> v1*, v2, v3
+                            mv.visitInsn(Opcodes.POP);
 
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", name, desc, b);
                         }
