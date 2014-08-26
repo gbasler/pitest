@@ -35,6 +35,36 @@ object SetMutatorTestClasses {
     }
   }
 
+  class HasTake(values: java.util.List[Int]) extends Callable[String] {
+    val set: Set[Int] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.take(1).mkString(", ")
+    }
+  }
+
+  class HasTakeRight(values: java.util.List[Int]) extends Callable[String] {
+    val set: Set[Int] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.takeRight(1).mkString(", ")
+    }
+  }
+
+  class HasTakeWhile(values: java.util.List[Int]) extends Callable[String] {
+    val set: Set[Int] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      var first = true
+      set.takeWhile {
+        _ =>
+          val ret = first
+          first = false
+          ret
+      }.mkString(", ")
+    }
+  }
+
   class HasToList(values: java.util.List[Int]) extends Callable[String] {
     val set: Set[Int] = Set(values.asScala.toSeq: _*)
 
@@ -74,6 +104,31 @@ object SetMutatorTestClasses {
       val sb = new StringBuilder()
       set.foreach(sb.append)
       sb.toString()
+    }
+  }
+
+  class HasMap(values: java.util.List[String]) extends Callable[String] {
+    val set: Set[String] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.map(" " + _).mkString(", ")
+    }
+  }
+
+  class HasMapWithBreakout(values: java.util.List[String]) extends Callable[String] {
+    val set: Set[String] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      val seq: Seq[String] = set.map(" " + _)(collection.breakOut)
+      seq.mkString(", ")
+    }
+  }
+
+  class HasFlatMap(values: java.util.List[String]) extends Callable[String] {
+    val set: Set[String] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.flatMap(s => Seq(" " + s)).mkString(", ")
     }
   }
 
