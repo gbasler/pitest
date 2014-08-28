@@ -44,11 +44,12 @@ public enum HashSetMutator implements MethodMutatorFactory {
         void visitReplacement();
     }
 
-    private enum State {SEEN_NOTHING, SEEN_FOLDLEFT}
+    private enum State {SEEN_BREAKOUT, SEEN_CAN_BUILD_FROM, SEEN_NOTHING}
 
     private final class ReorderHashSetVisitor extends MethodVisitor {
         private final MethodMutatorFactory factory;
         private final MutationContext context;
+        private State state;
 
         public ReorderHashSetVisitor(final MethodMutatorFactory factory,
                                      final MutationContext context,
@@ -56,6 +57,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
             super(Opcodes.ASM5, delegateVisitor);
             this.factory = factory;
             this.context = context;
+            this.state = State.SEEN_NOTHING;
         }
 
         public void mutateWith(final MutationIdentifier newId, Mutator mutator) {
@@ -266,20 +268,13 @@ public enum HashSetMutator implements MethodMutatorFactory {
                             // trying to avoid to have to allocate more variables in the local frame
                             // I think it's safer like this...
 
-                            // v1, v2, v2 -> v2, v3, v1, v2, v3
-                            mv.visitInsn(Opcodes.DUP2_X1);
-                            // v2, v3, v1, v2, v3 -> v2, v3, v1
-                            mv.visitInsn(Opcodes.POP2);
+                            mv.visitInsn(Opcodes.SWAP);
 
-                            // v2, v3, v1*
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, owner, "toSeq", "()Lscala/collection/Seq;", true);
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
                             mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
 
-                            // v2, v3, v1* -> v1*, v2, v3, v1*
-                            mv.visitInsn(Opcodes.DUP_X2);
-                            // v1*, v2, v3, v1* -> v1*, v2, v3
-                            mv.visitInsn(Opcodes.POP);
+                            mv.visitInsn(Opcodes.SWAP);
 
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", name, desc, b);
                             mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
@@ -319,40 +314,45 @@ public enum HashSetMutator implements MethodMutatorFactory {
                             visitMethodInsnOriginal(opc, owner, name, desc, b);
                         }
 
-                        // TODO: check collection.breakOut!!!
                         public void visitReplacement() {
-                            // kill canBuildFrom for set on the stack
-                            mv.visitInsn(Opcodes.POP);
+                            if (state == State.SEEN_BREAKOUT) {
+                                // replace Set with Seq
+                                // v1, v2, v2 -> v2, v3, v1, v2, v3
+                                mv.visitInsn(Opcodes.DUP2_X1);
+                                // v2, v3, v1, v2, v3 -> v2, v3, v1
+                                mv.visitInsn(Opcodes.POP2);
 
-                            // replace Set with Seq
-                            mv.visitInsn(Opcodes.SWAP);
-                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/immutable/Set", "toSeq", "()Lscala/collection/Seq;", true);
-                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
-                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableLike");
-                            mv.visitInsn(Opcodes.SWAP);
+                                // v2, v3, v1*
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, owner, "toSeq", "()Lscala/collection/Seq;", true);
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
+                                mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
 
-                            // put canBuildFrom for Seq instead
-                            mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/collection/Seq$", "MODULE$", "Lscala/collection/Seq$;");
-                            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/collection/Seq$", "canBuildFrom", "()Lscala/collection/generic/CanBuildFrom;", false);
+                                // v2, v3, v1* -> v1*, v2, v3, v1*
+                                mv.visitInsn(Opcodes.DUP_X2);
+                                // v1*, v2, v3, v1* -> v1*, v2, v3
+                                mv.visitInsn(Opcodes.POP);
 
-                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableLike", name, "(Lscala/Function1;Lscala/collection/generic/CanBuildFrom;)Ljava/lang/Object;", true);
-                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
-                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", "toSet", "()Lscala/collection/immutable/Set;", true);
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableLike", name, "(Lscala/Function1;Lscala/collection/generic/CanBuildFrom;)Ljava/lang/Object;", true);
+                            } else {
+                                // kill canBuildFrom for set on the stack
+                                mv.visitInsn(Opcodes.POP);
+
+                                // replace Set with Seq
+                                mv.visitInsn(Opcodes.SWAP);
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/immutable/Set", "toSeq", "()Lscala/collection/Seq;", true);
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
+                                mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableLike");
+                                mv.visitInsn(Opcodes.SWAP);
+
+                                // put canBuildFrom for Seq instead
+                                mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/collection/Seq$", "MODULE$", "Lscala/collection/Seq$;");
+                                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/collection/Seq$", "canBuildFrom", "()Lscala/collection/generic/CanBuildFrom;", false);
+
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableLike", name, "(Lscala/Function1;Lscala/collection/generic/CanBuildFrom;)Ljava/lang/Object;", true);
+                                mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", "toSet", "()Lscala/collection/immutable/Set;", true);
+                            }
                         }
-                        // TODO: check collection.breakOut!!!
-//                        public void visitReplacement() {
-//                            // replace Set with Seq
-//                            mv.visitInsn(Opcodes.SWAP);
-//                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/immutable/Set", "toSeq", "()Lscala/collection/Seq;", true);
-//                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
-//                            mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableLike");
-//                            mv.visitInsn(Opcodes.SWAP);
-//
-//                            mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/collection/package$", "MODULE$", "Lscala/collection/package$;");
-//                            mv.visitInsn(Opcodes.SWAP);
-//                            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/collection/package$", "breakOut", "(Lscala/collection/generic/CanBuildFrom;)Lscala/collection/generic/CanBuildFrom;", false);
-//                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableLike", "map", "(Lscala/Function1;Lscala/collection/generic/CanBuildFrom;)Ljava/lang/Object;", true);
-//                        }
                     };
                     mutateWith(newId, mutator);
                 } else {
@@ -360,6 +360,14 @@ public enum HashSetMutator implements MethodMutatorFactory {
                 }
             } else {
                 super.visitMethodInsn(opc, owner, name, desc, b);
+            }
+
+            if (name.equals("breakOut")) {
+                state = State.SEEN_BREAKOUT;
+            } else if (name.equals("canBuildFrom")) {
+                state = State.SEEN_CAN_BUILD_FROM;
+            } else {
+                state = State.SEEN_NOTHING;
             }
         }
     }
