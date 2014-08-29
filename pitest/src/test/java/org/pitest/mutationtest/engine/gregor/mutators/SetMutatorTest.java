@@ -48,15 +48,6 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
-    public void shouldMutateTakeWhileForSet() throws Exception {
-        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasTakeWhile.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasTakeWhile unmutated = new SetMutatorTestClasses.HasTakeWhile(integers);
-        // since head != tail, the mutant should give a different result
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
-    }
-
-    @Test
     public void shouldReplaceHeadOptionWithLastOptionForHashSet() throws Exception {
         final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasHeadOption.class);
         // will fail with only one element since head == tail

@@ -51,20 +51,6 @@ object SetMutatorTestClasses {
     }
   }
 
-  class HasTakeWhile(values: java.util.List[Int]) extends Callable[String] {
-    val set: Set[Int] = Set(values.asScala.toSeq: _*)
-
-    def call: String = {
-      var first = true
-      set.takeWhile {
-        _ =>
-          val ret = first
-          first = false
-          ret
-      }.mkString(", ")
-    }
-  }
-
   class HasToList(values: java.util.List[Int]) extends Callable[String] {
     val set: Set[Int] = Set(values.asScala.toSeq: _*)
 

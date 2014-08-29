@@ -123,7 +123,7 @@ public enum HashSetMutator implements MethodMutatorFactory {
                     } else {
                         visitMethodInsnOriginal(opc, owner, name, desc, b);
                     }
-                } else if (name.equals("toSeq")) {
+                }  else if (name.equals("toSeq")) {
                     final MutationIdentifier newId = this.context.registerMutation(
                             this.factory, "ordering matters for " + name + " in " + owner + "::" + name);
 
