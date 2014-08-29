@@ -268,15 +268,37 @@ public enum HashSetMutator implements MethodMutatorFactory {
                             // trying to avoid to have to allocate more variables in the local frame
                             // I think it's safer like this...
 
+                            // v1, v2, v3, v4 -> v3, v4, v1, v2, v3, v4
+                            mv.visitInsn(Opcodes.DUP2_X2);
+                            // v3, v4, v1, v2, v3, v4 -> v3, v4, v1, v2
+                            mv.visitInsn(Opcodes.POP2);
+
+                            // v3, v4, v2, v1
                             mv.visitInsn(Opcodes.SWAP);
 
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, owner, "toSeq", "()Lscala/collection/Seq;", true);
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/Seq", "reverse", "()Ljava/lang/Object;", true);
                             mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
 
+                            // v3, v4, v2, v1*
                             mv.visitInsn(Opcodes.SWAP);
 
-                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", name, desc, b);
+                            // v3, v4, v1*, v2
+                            mv.visitInsn(Opcodes.DUP2_X2);
+
+                            // v1*, v2, v3, v4, v1*, v2
+                            mv.visitInsn(Opcodes.POP2);
+
+                            // v1*, v2, v3, v4
+
+                            // kill canBuildFrom for set on the stack
+                            mv.visitInsn(Opcodes.POP);
+
+                            // put canBuildFrom for Seq instead
+                            mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/collection/Seq$", "MODULE$", "Lscala/collection/Seq$;");
+                            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/collection/Seq$", "canBuildFrom", "()Lscala/collection/generic/CanBuildFrom;", false);
+
+                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableLike", name, desc, b);
                             mv.visitTypeInsn(Opcodes.CHECKCAST, "scala/collection/TraversableOnce");
                             mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/TraversableOnce", "toSet", "()Lscala/collection/immutable/Set;", true);
                         }
