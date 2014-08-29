@@ -148,6 +148,14 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
+    public void shouldMutateOrderInScanLeftWithBreakoutForSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasScanLeftWithBreakout.class);
+        List<String> strings = new LinkedList<String>(Arrays.asList("one", "two"));
+        SetMutatorTestClasses.HasScanLeftWithBreakout unmutated = new SetMutatorTestClasses.HasScanLeftWithBreakout(strings);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
     public void shouldMutateOrderInToSeqForHashSet() throws Exception {
         final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasToSeq.class);
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));

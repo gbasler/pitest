@@ -141,6 +141,15 @@ object SetMutatorTestClasses {
       set.scanLeft("")((s, i) => s + i).mkString(", ")
     }
   }
+  
+  class HasScanLeftWithBreakout(values: java.util.List[String]) extends Callable[String] {
+    val set: Set[String] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      val seq: Seq[String] = set.scanLeft("")((s, i) => s + i)(collection.breakOut)
+      seq.mkString(", ")
+    }
+  }
 
 }
 
