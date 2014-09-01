@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.pitest.mutationtest.engine.Mutant;
 import org.pitest.mutationtest.engine.gregor.MutatorTestBase;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +15,17 @@ import static org.hamcrest.CoreMatchers.*;
 
 public class SetMutatorTest extends MutatorTestBase {
 
+    // between 4 and 5 elements the implementation switches from Set4 to HashSet
+    List<Object> ints1 = new ArrayList<Object>(Arrays.asList(1, 2, 3, 4));
+    List<Object> ints2 = new ArrayList<Object>(Arrays.asList(1, 2, 3, 4, 5));
+    List<List<Object>> intTests = Arrays.asList(ints1, ints2);
+
+    List<Object> doubles1 = new ArrayList<Object>(Arrays.asList(1.0, 2.0, 3.0, 4.0));
+    List<Object> doubles2 = new ArrayList<Object>(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0));
+    List<List<Object>> doubleTests = Arrays.asList(doubles1, doubles2);
+
+    List<List<String>> stringTests = Arrays.asList(Arrays.asList("one", "two", "three", "four"), Arrays.asList("one", "two", "three", "four", "five"));
+
     @Before
     public void setupEngine() {
         createTesteeWith(HashSetMutator.HASH_SET_ORDERING_MUTATOR);
@@ -21,177 +33,196 @@ public class SetMutatorTest extends MutatorTestBase {
 
     @Test
     public void shouldReplaceHeadOptionWithLastOptionForSet() throws Exception {
-        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasHeadOption.class);
         // will fail with only one element since head == tail
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasHeadOption unmutated = new SetMutatorTestClasses.HasHeadOption(integers);
-        // since head != tail, the mutant should give a different result
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasHeadOption.class);
+
+        for (List<Object> test : intTests) {
+            SetMutatorTestClasses.HasHeadOption unmutated = new SetMutatorTestClasses.HasHeadOption(test);
+            // since head != tail, the mutant should give a different result
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateTakeForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasTake.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasTake unmutated = new SetMutatorTestClasses.HasTake(integers);
-        // since head != tail, the mutant should give a different result
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : intTests) {
+            SetMutatorTestClasses.HasTake unmutated = new SetMutatorTestClasses.HasTake(test);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateTakeRightForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasTakeRight.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasTakeRight unmutated = new SetMutatorTestClasses.HasTakeRight(integers);
-        // since head != tail, the mutant should give a different result
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : intTests) {
+            SetMutatorTestClasses.HasTakeRight unmutated = new SetMutatorTestClasses.HasTakeRight(test);
+            // since head != tail, the mutant should give a different result
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldReplaceHeadOptionWithLastOptionForHashSet() throws Exception {
         final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasHeadOption.class);
-        // will fail with only one element since head == tail
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        HashSetMutatorTestClasses.HasHeadOption unmutated = new HashSetMutatorTestClasses.HasHeadOption(integers);
-        // since head != tail, the mutant should give a different result
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : intTests) {
+            // will fail with only one element since head == tail
+            HashSetMutatorTestClasses.HasHeadOption unmutated = new HashSetMutatorTestClasses.HasHeadOption(test);
+            // since head != tail, the mutant should give a different result
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInToListForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToList.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasToList unmutated = new SetMutatorTestClasses.HasToList(integers);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : intTests) {
+            SetMutatorTestClasses.HasToList unmutated = new SetMutatorTestClasses.HasToList(test);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInToSeqForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToSeq.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasToSeq unmutated = new SetMutatorTestClasses.HasToSeq(integers);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : intTests) {
+            SetMutatorTestClasses.HasToSeq unmutated = new SetMutatorTestClasses.HasToSeq(test);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInToIndexedSeqForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToIndexedSeq.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasToIndexedSeq unmutated = new SetMutatorTestClasses.HasToIndexedSeq(integers);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : intTests) {
+            SetMutatorTestClasses.HasToIndexedSeq unmutated = new SetMutatorTestClasses.HasToIndexedSeq(test);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInToIntArrayForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToIntArray.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasToIntArray unmutated = new SetMutatorTestClasses.HasToIntArray(integers);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : intTests) {
+            SetMutatorTestClasses.HasToIntArray unmutated = new SetMutatorTestClasses.HasToIntArray(test);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInToDoubleArrayForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToDoubleArray.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1.0, 2.0));
-        SetMutatorTestClasses.HasToDoubleArray unmutated = new SetMutatorTestClasses.HasToDoubleArray(integers);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : doubleTests) {
+            SetMutatorTestClasses.HasToDoubleArray unmutated = new SetMutatorTestClasses.HasToDoubleArray(test);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInToStringArrayForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToStringArray.class);
-        List<String> strings = new LinkedList<String>(Arrays.asList("one", "two"));
-        SetMutatorTestClasses.HasToStringArray unmutated = new SetMutatorTestClasses.HasToStringArray(strings);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<String> strings : stringTests) {
+            SetMutatorTestClasses.HasToStringArray unmutated = new SetMutatorTestClasses.HasToStringArray(strings);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInForeachForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasForeach.class);
-        List<String> strings = new LinkedList<String>(Arrays.asList("1", "2"));
-        SetMutatorTestClasses.HasForeach unmutated = new SetMutatorTestClasses.HasForeach(strings);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<String> strings : stringTests) {
+            SetMutatorTestClasses.HasForeach unmutated = new SetMutatorTestClasses.HasForeach(strings);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInMapForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasMap.class);
-        List<String> strings = new LinkedList<String>(Arrays.asList("1", "2"));
-        SetMutatorTestClasses.HasMap unmutated = new SetMutatorTestClasses.HasMap(strings);
-        String actual = mutateAndCall(unmutated, mutant);
-        String expected = unmutated.call();
-        assertThat(expected, not(equalTo(actual)));
+        for (List<String> strings : stringTests) {
+            SetMutatorTestClasses.HasMap unmutated = new SetMutatorTestClasses.HasMap(strings);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInMapWithBreakoutForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasMapWithBreakout.class);
-        List<String> strings = new LinkedList<String>(Arrays.asList("1", "2"));
-        SetMutatorTestClasses.HasMapWithBreakout unmutated = new SetMutatorTestClasses.HasMapWithBreakout(strings);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<String> strings : stringTests) {
+            SetMutatorTestClasses.HasMapWithBreakout unmutated = new SetMutatorTestClasses.HasMapWithBreakout(strings);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInFlatMapForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasFlatMap.class);
-        List<String> strings = new LinkedList<String>(Arrays.asList("1", "2"));
-        SetMutatorTestClasses.HasFlatMap unmutated = new SetMutatorTestClasses.HasFlatMap(strings);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<String> strings : stringTests) {
+            SetMutatorTestClasses.HasFlatMap unmutated = new SetMutatorTestClasses.HasFlatMap(strings);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInFoldLeftForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasFoldLeft.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasFoldLeft unmutated = new SetMutatorTestClasses.HasFoldLeft(integers);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : intTests) {
+            SetMutatorTestClasses.HasFoldLeft unmutated = new SetMutatorTestClasses.HasFoldLeft(test);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInReduceLeftForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasReduceLeft.class);
-        List<String> strings = new LinkedList<String>(Arrays.asList("one", "two"));
-        SetMutatorTestClasses.HasReduceLeft unmutated = new SetMutatorTestClasses.HasReduceLeft(strings);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<String> strings : stringTests) {
+            SetMutatorTestClasses.HasReduceLeft unmutated = new SetMutatorTestClasses.HasReduceLeft(strings);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInScanLeftForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasScanLeft.class);
-        List<String> strings = new LinkedList<String>(Arrays.asList("one", "two"));
-        SetMutatorTestClasses.HasScanLeft unmutated = new SetMutatorTestClasses.HasScanLeft(strings);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<String> strings : stringTests) {
+            SetMutatorTestClasses.HasScanLeft unmutated = new SetMutatorTestClasses.HasScanLeft(strings);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInScanLeftWithBreakoutForSet() throws Exception {
         final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasScanLeftWithBreakout.class);
-        List<String> strings = new LinkedList<String>(Arrays.asList("one", "two"));
-        SetMutatorTestClasses.HasScanLeftWithBreakout unmutated = new SetMutatorTestClasses.HasScanLeftWithBreakout(strings);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<String> strings : stringTests) {
+            SetMutatorTestClasses.HasScanLeftWithBreakout unmutated = new SetMutatorTestClasses.HasScanLeftWithBreakout(strings);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldMutateOrderInToSeqForHashSet() throws Exception {
         final Mutant mutant = getFirstMutant(HashSetMutatorTestClasses.HasToSeq.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        HashSetMutatorTestClasses.HasToSeq unmutated = new HashSetMutatorTestClasses.HasToSeq(integers);
-        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        for (List<Object> test : intTests) {
+            HashSetMutatorTestClasses.HasToSeq unmutated = new HashSetMutatorTestClasses.HasToSeq(test);
+            assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+        }
     }
 
     @Test
     public void shouldNotMutateOrderInHeadOptionForTreeSet() throws Exception {
         final Mutant mutant = getFirstMutant(TreeSetMutatorTestClasses.HasHeadOption.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        TreeSetMutatorTestClasses.HasHeadOption unmutated = new TreeSetMutatorTestClasses.HasHeadOption(integers);
-        assertThat(unmutated.call(), equalTo(mutateAndCall(unmutated, mutant)));
+        for (List<Object> test : intTests) {
+            TreeSetMutatorTestClasses.HasHeadOption unmutated = new TreeSetMutatorTestClasses.HasHeadOption(test);
+            assertThat(unmutated.call(), equalTo(mutateAndCall(unmutated, mutant)));
+        }
     }
 
     @Test
     public void shouldNotMutateOrderInToSeqForTreeSet() throws Exception {
         final Mutant mutant = getFirstMutant(TreeSetMutatorTestClasses.HasToSeq.class);
-        List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        TreeSetMutatorTestClasses.HasToSeq unmutated = new TreeSetMutatorTestClasses.HasToSeq(integers);
-        assertThat(unmutated.call(), equalTo(mutateAndCall(unmutated, mutant)));
+        for (List<Object> test : intTests) {
+            TreeSetMutatorTestClasses.HasToSeq unmutated = new TreeSetMutatorTestClasses.HasToSeq(test);
+            assertThat(unmutated.call(), equalTo(mutateAndCall(unmutated, mutant)));
+        }
     }
 }
