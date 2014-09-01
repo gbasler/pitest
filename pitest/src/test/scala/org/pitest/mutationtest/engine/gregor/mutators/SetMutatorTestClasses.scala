@@ -113,7 +113,13 @@ object SetMutatorTestClasses {
     val set: Set[String] = Set(values.asScala.toSeq: _*)
 
     def call: String = {
-      set.map(" " + _).mkString(", ")
+      var i = 0
+      set.map {
+        s =>
+          val res = s"$i: $s"
+          i += 1
+          res
+      }.mkString(", ")
     }
   }
 
@@ -121,7 +127,13 @@ object SetMutatorTestClasses {
     val set: Set[String] = Set(values.asScala.toSeq: _*)
 
     def call: String = {
-      val seq: Seq[String] = set.map(" " + _)(collection.breakOut)
+      var i = 0
+      val seq: Seq[String] = set.map {
+        s =>
+          val res = s"$i: $s"
+          i += 1
+          res
+      }(collection.breakOut)
       seq.mkString(", ")
     }
   }
@@ -130,7 +142,13 @@ object SetMutatorTestClasses {
     val set: Set[String] = Set(values.asScala.toSeq: _*)
 
     def call: String = {
-      set.flatMap(s => Seq(" " + s)).mkString(", ")
+      var i = 0
+      set.flatMap {
+        s =>
+          val res = s"$i: $s"
+          i += 1
+          Seq(res)
+      }.mkString(", ")
     }
   }
 

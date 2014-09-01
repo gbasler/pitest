@@ -24,7 +24,8 @@ public class SetMutatorTest extends MutatorTestBase {
     List<Object> doubles2 = new ArrayList<Object>(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0));
     List<List<Object>> doubleTests = Arrays.asList(doubles1, doubles2);
 
-    List<List<String>> stringTests = Arrays.asList(Arrays.asList("one", "two", "three", "four"), Arrays.asList("one", "two", "three", "four", "five"));
+    List<List<String>> stringTests = Arrays.asList(Arrays.asList("one", "two", "three", "four"),
+            Arrays.asList("1one", "2two", "3three", "4four", "5five"));
 
     @Before
     public void setupEngine() {
