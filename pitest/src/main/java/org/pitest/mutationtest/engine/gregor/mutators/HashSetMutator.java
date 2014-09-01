@@ -44,7 +44,10 @@ public enum HashSetMutator implements MethodMutatorFactory {
         void visitReplacement();
     }
 
-    private enum State {SEEN_BREAKOUT, SEEN_CAN_BUILD_FROM, SEEN_NOTHING}
+    private enum State {
+        SEEN_BREAKOUT, SEEN_CAN_BUILD_FROM, SEEN_INT_CLASS_TAG, SEEN_DOUBLE_CLASS_TAG,
+        SEEN_OBJECT_CLASS_TAG, SEEN_NOTHING
+    }
 
     private final class ReorderHashSetVisitor extends MethodVisitor {
         private final MethodMutatorFactory factory;
@@ -183,15 +186,34 @@ public enum HashSetMutator implements MethodMutatorFactory {
                         }
 
                         public void visitReplacement() {
-                            // TODO: fix types!!! this works only for integer arrays!
                             visitOriginal();
-                            mv.visitTypeInsn(Opcodes.CHECKCAST, "[I");
 
-                            mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/Predef$", "MODULE$", "Lscala/Predef$;");
-                            mv.visitInsn(Opcodes.SWAP);
+                            // TODO: support Long
+                            if (state == State.SEEN_INT_CLASS_TAG) {
+                                mv.visitTypeInsn(Opcodes.CHECKCAST, "[I");
 
-                            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/Predef$", "intArrayOps", "([I)Lscala/collection/mutable/ArrayOps;", false);
-                            mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/mutable/ArrayOps", "reverse", "()Ljava/lang/Object;", true);
+                                mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/Predef$", "MODULE$", "Lscala/Predef$;");
+                                mv.visitInsn(Opcodes.SWAP);
+
+                                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/Predef$", "intArrayOps", "([I)Lscala/collection/mutable/ArrayOps;", false);
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/mutable/ArrayOps", "reverse", "()Ljava/lang/Object;", true);
+                            } else if (state == State.SEEN_DOUBLE_CLASS_TAG) {
+                                mv.visitTypeInsn(Opcodes.CHECKCAST, "[D");
+
+                                mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/Predef$", "MODULE$", "Lscala/Predef$;");
+                                mv.visitInsn(Opcodes.SWAP);
+
+                                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/Predef$", "doubleArrayOps", "([D)Lscala/collection/mutable/ArrayOps;", false);
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/mutable/ArrayOps", "reverse", "()Ljava/lang/Object;", true);
+                            } else if (state == State.SEEN_OBJECT_CLASS_TAG) {
+                                mv.visitTypeInsn(Opcodes.CHECKCAST, "[Ljava/lang/Object;");
+
+                                mv.visitFieldInsn(Opcodes.GETSTATIC, "scala/Predef$", "MODULE$", "Lscala/Predef$;");
+                                mv.visitInsn(Opcodes.SWAP);
+
+                                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "scala/Predef$", "refArrayOps", "([Ljava/lang/Object;)Lscala/collection/mutable/ArrayOps;", false);
+                                mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "scala/collection/mutable/ArrayOps", "reverse", "()Ljava/lang/Object;", true);
+                            }
                         }
                     };
                     mutateWith(newId, mutator);
@@ -416,7 +438,15 @@ public enum HashSetMutator implements MethodMutatorFactory {
                 super.visitMethodInsn(opc, owner, name, desc, b);
             }
 
-            if (name.equals("breakOut")) {
+            if (owner.equals("scala/reflect/ClassTag$")) {
+                if (name.equals("Int")) {
+                    state = State.SEEN_INT_CLASS_TAG;
+                } else if (name.equals("Double")) {
+                    state = State.SEEN_DOUBLE_CLASS_TAG;
+                } else if (name.equals("apply")) {
+                    state = State.SEEN_OBJECT_CLASS_TAG;
+                }
+            } else if (name.equals("breakOut")) {
                 state = State.SEEN_BREAKOUT;
             } else if (name.equals("canBuildFrom")) {
                 state = State.SEEN_CAN_BUILD_FROM;

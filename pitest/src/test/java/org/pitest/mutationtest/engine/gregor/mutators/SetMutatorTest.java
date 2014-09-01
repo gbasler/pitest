@@ -82,10 +82,26 @@ public class SetMutatorTest extends MutatorTestBase {
     }
 
     @Test
-    public void shouldMutateOrderInToArrayForSet() throws Exception {
-        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToArray.class);
+    public void shouldMutateOrderInToIntArrayForSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToIntArray.class);
         List<Object> integers = new LinkedList<Object>(Arrays.asList(1, 2));
-        SetMutatorTestClasses.HasToArray unmutated = new SetMutatorTestClasses.HasToArray(integers);
+        SetMutatorTestClasses.HasToIntArray unmutated = new SetMutatorTestClasses.HasToIntArray(integers);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
+    public void shouldMutateOrderInToDoubleArrayForSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToDoubleArray.class);
+        List<Object> integers = new LinkedList<Object>(Arrays.asList(1.0, 2.0));
+        SetMutatorTestClasses.HasToDoubleArray unmutated = new SetMutatorTestClasses.HasToDoubleArray(integers);
+        assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
+    }
+
+    @Test
+    public void shouldMutateOrderInToStringArrayForSet() throws Exception {
+        final Mutant mutant = getFirstMutant(SetMutatorTestClasses.HasToStringArray.class);
+        List<String> strings = new LinkedList<String>(Arrays.asList("one", "two"));
+        SetMutatorTestClasses.HasToStringArray unmutated = new SetMutatorTestClasses.HasToStringArray(strings);
         assertThat(unmutated.call(), not(equalTo(mutateAndCall(unmutated, mutant))));
     }
 

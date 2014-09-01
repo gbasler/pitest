@@ -75,8 +75,24 @@ object SetMutatorTestClasses {
     }
   }
 
-  class HasToArray(values: java.util.List[Int]) extends Callable[String] {
+  class HasToIntArray(values: java.util.List[Int]) extends Callable[String] {
     val set: Set[Int] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.toArray.mkString(", ")
+    }
+  }
+
+  class HasToDoubleArray(values: java.util.List[Double]) extends Callable[String] {
+    val set: Set[Double] = Set(values.asScala.toSeq: _*)
+
+    def call: String = {
+      set.toArray.mkString(", ")
+    }
+  }
+
+  class HasToStringArray(values: java.util.List[String]) extends Callable[String] {
+    val set: Set[String] = Set(values.asScala.toSeq: _*)
 
     def call: String = {
       set.toArray.mkString(", ")
@@ -141,7 +157,7 @@ object SetMutatorTestClasses {
       set.scanLeft("")((s, i) => s + i).mkString(", ")
     }
   }
-  
+
   class HasScanLeftWithBreakout(values: java.util.List[String]) extends Callable[String] {
     val set: Set[String] = Set(values.asScala.toSeq: _*)
 
